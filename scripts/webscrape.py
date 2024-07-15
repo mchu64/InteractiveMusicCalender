@@ -18,33 +18,35 @@ def scrape():
         if caption_text == f"List of albums released or to be released in {month} 2024":
             table = caption.find_parent('table', {'class': 'wikitable plainrowheaders'})
             break
+
+
     rows = table.find_all('tr')
     hashmap = {}
     current_date = ""
 
+    
     for row in rows:
-        date_header = row.find('th', class_='head head_type_1')
-        if date_header:
-            current_date = date_header.text.strip()
+        th = row.find('th', scope='row')
+        if th:
+            current_date = th.get_text(strip=True)
             if current_date not in hashmap:
                 hashmap[current_date] = []
-            continue
-
-        artist_cell = row.find('td', class_='artistName')
-        album_cell = row.find('td', class_='albumTitle')
-
-        if artist_cell and album_cell:
-            artist_name = artist_cell.get_text(strip=True)
-            album_title = album_cell.get_text(strip=True)
+        
+        cells = row.find_all('td')
+        if len(cells) >= 3:
+            artist = cells[0].get_text(strip=True)
+            album = cells[1].get_text(strip=True)
+            genre = cells[2].get_text(strip=True) if len(cells) > 2 else ""
+            label = cells[3].get_text(strip=True) if len(cells) > 3 else ""
 
             hashmap[current_date].append({
-                'artist': artist_name,
-                'album': album_title,
+                'artist': artist,
+                'album': album,
+                'genre': genre,
+                'label': label
             })
 
     print(hashmap)
-
-
 
 def main():
     scrape()
